@@ -12,7 +12,7 @@
 2. 点击 `Add file` → `Upload files`
 3. 把本目录中的 `index.html`、`README.md`、`UPLOAD.md`、`.gitignore`、`.nojekyll` 和 `assets` 文件夹一起拖入上传区域
 4. 确认页面上出现完整的 `assets/css/style.css`、`assets/js/db.js`、`assets/js/app.js` 路径
-5. 在提交说明中填写 `Initial registration table app`
+5. 提交说明填写 `Style table like online spreadsheet`
 6. 点击 `Commit changes`
 
 GitHub 网页端支持拖入文件夹并保留目录结构。
@@ -36,28 +36,29 @@ GitHub 网页端支持拖入文件夹并保留目录结构。
 
 ### 第 3 批：样式
 
-1. 新建或上传 `assets/css/style.css`
-
-GitHub 网页端拖入 `assets` 文件夹时会自动保留路径，因此通常不需要手动建目录。
+1. `assets/css/style.css`
 
 ### 第 4 批：程序逻辑
 
 1. `assets/js/db.js`
 2. `assets/js/app.js`
 
-## 上传后的检查
+## 更新已有文件
 
-仓库根目录应包含：
+如果仓库里已经有旧版文件：
+
+1. 进入对应文件页面
+2. 点击右上角铅笔图标或 `Edit`
+3. 用本目录中的同名文件内容替换
+4. 点击 `Commit changes`
+
+需要更新的文件同样是：
 
 ```text
 index.html
 README.md
 UPLOAD.md
-.gitignore
-.nojekyll
 assets/css/style.css
 assets/js/db.js
 assets/js/app.js
 ```
-
-打开 <https://github.com/Xyu-7/work> 后，确认 `assets` 文件夹存在，并且里面的路径与上面一致。
