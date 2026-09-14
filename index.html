@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#2563eb">
+  <meta name="description" content="一个使用 IndexedDB 在浏览器本地保存数据的登记表应用。">
+  <title>登记表</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#tableRegion">跳到表格内容</a>
+
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">登</span>
+        <div>
+          <h1>登记表</h1>
+          <p>数据仅保存在当前浏览器的 IndexedDB 中</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="button button-ghost" id="exportCsvButton" type="button">
+          导出 CSV
+        </button>
+        <button class="button button-primary" id="addButton" type="button">
+          <span aria-hidden="true">+</span>
+          新增记录
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <section class="summary-grid" aria-label="数据概览">
+      <article class="summary-card">
+        <span class="summary-label">全部记录</span>
+        <strong class="summary-value" id="totalCount">0</strong>
+      </article>
+      <article class="summary-card">
+        <span class="summary-label">当前显示</span>
+        <strong class="summary-value" id="visibleCount">0</strong>
+      </article>
+      <article class="summary-card summary-card-wide">
+        <span class="summary-label">存储状态</span>
+        <span class="storage-state" id="storageState">
+          <span class="status-dot" aria-hidden="true"></span>
+          正在连接本地数据库
+        </span>
+      </article>
+    </section>
+
+    <section class="table-panel" aria-labelledby="tableTitle">
+      <div class="table-toolbar">
+        <div>
+          <h2 id="tableTitle">登记信息</h2>
+          <p id="resultHint">正在读取记录…</p>
+        </div>
+        <label class="search-field">
+          <span class="sr-only">搜索记录</span>
+          <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18">
+            <path d="m21 21-4.35-4.35m2.35-5.65a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z"></path>
+          </svg>
+          <input id="searchInput" type="search" placeholder="搜索姓名、部门、电话…" autocomplete="off">
+        </label>
+      </div>
+
+      <div class="table-wrap" id="tableRegion">
+        <table>
+          <caption class="sr-only">登记记录列表</caption>
+          <thead>
+            <tr>
+              <th scope="col">
+                <button class="sort-button" type="button" data-sort="name">
+                  姓名 <span class="sort-indicator" aria-hidden="true"></span>
+                </button>
+              </th>
+              <th scope="col">联系方式</th>
+              <th scope="col">部门</th>
+              <th scope="col">
+                <button class="sort-button" type="button" data-sort="status">
+                  状态 <span class="sort-indicator" aria-hidden="true"></span>
+                </button>
+              </th>
+              <th scope="col">备注</th>
+              <th scope="col">
+                <button class="sort-button" type="button" data-sort="updatedAt">
+                  更新时间 <span class="sort-indicator" aria-hidden="true"></span>
+                </button>
+              </th>
+              <th scope="col" class="actions-column">操作</th>
+            </tr>
+          </thead>
+          <tbody id="recordsBody"></tbody>
+        </table>
+
+        <div class="empty-state" id="emptyState">
+          <div class="empty-icon" aria-hidden="true">+</div>
+          <h3 id="emptyTitle">还没有记录</h3>
+          <p id="emptyDescription">点击“新增记录”开始登记，数据会自动保存在这个浏览器里。</p>
+          <button class="button button-primary" id="emptyAddButton" type="button">新增第一条记录</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal-backdrop" id="recordModal" hidden>
+    <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-header">
+        <div>
+          <p class="modal-eyebrow" id="modalEyebrow">新增记录</p>
+          <h2 id="modalTitle">填写登记信息</h2>
+        </div>
+        <button class="icon-button" id="closeModalButton" type="button" aria-label="关闭">
+          <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20">
+            <path d="M6 6l12 12M18 6 6 18"></path>
+          </svg>
+        </button>
+      </div>
+
+      <form id="recordForm" novalidate>
+        <input id="recordId" type="hidden">
+
+        <div class="form-grid">
+          <label class="form-field form-field-full">
+            <span>姓名 <em>*</em></span>
+            <input id="nameInput" name="name" type="text" maxlength="60" required autocomplete="name" placeholder="请输入姓名">
+            <small class="field-error" id="nameError"></small>
+          </label>
+
+          <label class="form-field">
+            <span>手机号</span>
+            <input id="phoneInput" name="phone" type="tel" maxlength="30" inputmode="tel" autocomplete="tel" placeholder="例如：13800000000">
+            <small class="field-error" id="phoneError"></small>
+          </label>
+
+          <label class="form-field">
+            <span>邮箱</span>
+            <input id="emailInput" name="email" type="email" maxlength="120" autocomplete="email" placeholder="name@example.com">
+            <small class="field-error" id="emailError"></small>
+          </label>
+
+          <label class="form-field">
+            <span>部门</span>
+            <input id="departmentInput" name="department" type="text" maxlength="80" placeholder="例如：产品部">
+          </label>
+
+          <label class="form-field">
+            <span>状态</span>
+            <select id="statusInput" name="status">
+              <option value="在职">在职</option>
+              <option value="试用">试用</option>
+              <option value="休假">休假</option>
+              <option value="离职">离职</option>
+            </select>
+          </label>
+
+          <label class="form-field form-field-full">
+            <span>备注</span>
+            <textarea id="noteInput" name="note" rows="4" maxlength="500" placeholder="可选，最多 500 个字"></textarea>
+          </label>
+        </div>
+
+        <p class="form-error" id="formError" role="alert"></p>
+
+        <div class="modal-actions">
+          <button class="button button-ghost" id="cancelButton" type="button">取消</button>
+          <button class="button button-primary" id="saveButton" type="submit">保存记录</button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
+
+  <noscript>
+    <div class="noscript-message">这个应用需要启用 JavaScript 才能使用。</div>
+  </noscript>
+
+  <script src="assets/js/db.js" defer></script>
+  <script src="assets/js/app.js" defer></script>
+</body>
+</html>
